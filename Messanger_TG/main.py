@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request
-#import requests
+import requests
 import uvicorn
 import aiohttp
 import os
@@ -10,6 +10,7 @@ from schemas import Answer
 load_dotenv()
 TG_API = os.getenv("BOT_API_KEY")
 MY_ID = os.getenv("MY_CHAT_ID")
+ARINA = os.getenv("ARINA")
 
 
 app = FastAPI()
@@ -25,6 +26,11 @@ async def answer(chat_id: int, text: str):
         async with session.post(f'https://api.telegram.org/bot{TG_API}/sendMessage', data = data) as response:
             return response.status
 
+# @app.post("/")
+# async def root(request: Request):
+#     result = await request.json()
+#     print(result)
+
 
 @app.post("/")
 async def root(obj: Answer): # fastapi требует указать тип данных
@@ -37,18 +43,33 @@ async def root(obj: Answer): # fastapi требует указать тип да
     # obj = Answer.model_validate(result) # конвертация json в py obj
     # print(obj.message.text)
     
-    f_text = f'user: {obj.message.from_tg.chat_id}\n{obj.message.from_tg.first_name}\nwrites: {obj.message.text}'
-    data = {
-        'chat_id': MY_ID,
-        'text': f_text
-    }
+    # f_text = f'user: {obj.message.from_tg.chat_id}\n{obj.message.from_tg.first_name}\nwrites: {obj.message.text}'
+    
+    print(obj.model_dump_json())
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post(f'https://api.telegram.org/bot{TG_API}/sendMessage', data = data) as response:
-            print(response.status)
+    if obj.message.from_tg.chat_id == int(MY_ID):
+        if obj.message.reply_to_message is not None:
+            data = {
+                'chat_id': obj.message.reply_to_message.forward_from.chat_id, # зависит от настройки персонализации перессылок
+                'from_chat_id': obj.message.from_tg.chat_id,
+                'message_id': obj.message.message_id
+            }
 
-    # req = requests.post(f'https://api.telegram.org/bot{TG_API}/sendMessage', data = data)
-    # print(req.status_code)
+            async with aiohttp.ClientSession() as session:
+                async with session.post(f'https://api.telegram.org/bot{TG_API}/copyMessage', data = data) as response:
+                    print(response.status)
+    else:
+        data = {
+            'chat_id': MY_ID,
+            'from_chat_id': obj.message.from_tg.chat_id,
+            'message_id': obj.message.message_id
+        }
+
+        async with aiohttp.ClientSession() as session:
+            async with session.post(f'https://api.telegram.org/bot{TG_API}/forwardMessage', data = data) as response:
+                print(response.status)
+
+
     return {"status": "ok!"}
 
 

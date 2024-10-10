@@ -7,7 +7,7 @@ from dotenv import load_dotenv # для хранения переменных о
 load_dotenv()
 TG_API = os.getenv("BOT_API_KEY") # token to @fastapi_msg_bot
 
-whook = 'b2f6548d77393b.lhr.life'
+whook = '748b37b92ef4e5.lhr.life'
 
 r = requests.get(f'https://api.telegram.org/bot{TG_API}/setWebhook?url=https://{whook}/')
 
