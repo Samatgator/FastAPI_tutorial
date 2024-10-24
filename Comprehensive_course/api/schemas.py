@@ -57,9 +57,51 @@ class UserResponse(BaseModel):
         }
     )
 
+class BlogContent(BaseModel):
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    title: str = Field(...)
+    body: str = Field(...)
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed = True,
+        json_encoders={ObjectId: str},
+        json_schema_extra = {
+            "example": {
+                "body": "blog content",
+                "title": "Blog title",
+            }
+        }
+    )
+    
+
+class BlogContentResponse(BaseModel):
+    id: Optional[PyObjectId] = Field(alias="_id", default=None)
+    title: str = Field(...)
+    body: str = Field(...)
+    author_id: str = Field(...)
+    author_name: str = Field(...)
+    created_at: str = Field(...)
+
+    model_config = ConfigDict(
+        populate_by_name=True,
+        arbitrary_types_allowed = True,
+        json_encoders={ObjectId: str},
+        json_schema_extra = {
+            "example": {
+                "title": "Blog title",
+                "body": "blog content",
+                "author_id": "author's id",
+                "author_name": "author's name",
+                "created_at": "date created"
+            }
+        }
+    )
+    
+
 
 class TokenData(BaseModel):
-    id: str | None = None
+    id: str
 
 class PasswordReset(BaseModel):
     email: EmailStr

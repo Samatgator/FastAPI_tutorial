@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Body, HTTPException, status
+from fastapi.encoders import jsonable_encoder
 from ..schemas import User, UserResponse, db
 from ..utils import get_password_hash 
 import secrets
@@ -38,7 +39,7 @@ async def registration(user_info: User = Body(...)):
 
     new_user = await db["users"].insert_one(user_info)
     created_user = await db["users"].find_one({"_id": new_user.inserted_id})
-
+    
     # send email
     
     return created_user

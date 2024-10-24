@@ -5,7 +5,7 @@ import jwt
 from jwt.exceptions import InvalidTokenError
 from datetime import datetime, timedelta, timezone
 
-from .schemas import TokenData, db
+from .schemas import TokenData, db, PyObjectId, ObjectId
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 
@@ -27,6 +27,7 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
+
 def verify_access_token(token: str, credentials_exception):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
@@ -36,6 +37,8 @@ def verify_access_token(token: str, credentials_exception):
             raise credentials_exception
         
         token_data = TokenData(id=id)
+        # print(token_data)
+        
         return token_data
     
     except InvalidTokenError:
@@ -49,6 +52,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
         headers={"WWW-AUTHENTICATE": "Bearer"}
     )
     current_user_id = verify_access_token(token, credentials_exception).id
+    
     current_user = await db["users"].find_one({"_id": current_user_id})
+    current_user.update({"_id": str(current_user["_id"])})
+    print(current_user)
 
     return current_user
