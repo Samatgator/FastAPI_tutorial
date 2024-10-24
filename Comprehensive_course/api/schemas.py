@@ -60,3 +60,6 @@ class UserResponse(BaseModel):
 
 class TokenData(BaseModel):
     id: str | None = None
+
+class PasswordReset(BaseModel):
+    email: EmailStr
