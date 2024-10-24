@@ -56,3 +56,7 @@ class UserResponse(BaseModel):
             }
         }
     )
+
+
+class TokenData(BaseModel):
+    id: str | None = None
